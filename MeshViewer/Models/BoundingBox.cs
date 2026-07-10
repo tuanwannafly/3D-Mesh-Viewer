@@ -6,6 +6,19 @@ public readonly record struct BoundingBox(Vertex Min, Vertex Max)
 {
     public static BoundingBox FromVertex(Vertex vertex) => new(vertex, vertex);
 
+    public Vertex Center => new(
+        (Min.X + Max.X) / 2,
+        (Min.Y + Max.Y) / 2,
+        (Min.Z + Max.Z) / 2);
+
+    public double Width => Max.X - Min.X;
+
+    public double Height => Max.Y - Min.Y;
+
+    public double Depth => Max.Z - Min.Z;
+
+    public double MaxDimension => Math.Max(Width, Math.Max(Height, Depth));
+
     public BoundingBox Include(Vertex vertex)
     {
         return new BoundingBox(
