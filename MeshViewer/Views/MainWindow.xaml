@@ -7,9 +7,30 @@
         Title="3D Mesh Viewer" Height="720" Width="1080"
         MinHeight="480" MinWidth="720">
     <Grid>
-        <Viewport3D x:Name="MainViewport">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ToolBarTray Grid.Row="0">
+            <ToolBar>
+                <Button Click="ResetViewButton_Click" Content="Reset View" />
+            </ToolBar>
+        </ToolBarTray>
+
+        <Viewport3D x:Name="MainViewport"
+                    Grid.Row="1"
+                    ClipToBounds="True"
+                    Focusable="True"
+                    MouseLeftButtonDown="MainViewport_MouseLeftButtonDown"
+                    MouseLeftButtonUp="MainViewport_MouseLeftButtonUp"
+                    MouseMove="MainViewport_MouseMove"
+                    MouseWheel="MainViewport_MouseWheel"
+                    MouseDown="MainViewport_MouseDown"
+                    MouseUp="MainViewport_MouseUp">
             <Viewport3D.Camera>
-                <PerspectiveCamera Position="0,0,5"
+                <PerspectiveCamera x:Name="SceneCamera"
+                                   Position="0,0,5"
                                    LookDirection="0,0,-1"
                                    UpDirection="0,1,0"
                                    FieldOfView="45" />
