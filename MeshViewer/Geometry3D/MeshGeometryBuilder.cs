@@ -20,7 +20,7 @@ public static class MeshGeometryBuilder
         ArgumentNullException.ThrowIfNull(mesh);
 
         var geometry = new MeshGeometry3D();
-        var slotMap = new Dictionary<(int vertexIndex, int? normalIndex), int>();
+        var slotMap = new Dictionary<(int vertexIndex, int? normalIndex, int faceIndex), int>();
 
         for (var i = 0; i < mesh.Faces.Count; i++)
         {
@@ -29,7 +29,7 @@ public static class MeshGeometryBuilder
                 continue;
             }
 
-            AddFace(geometry, mesh, mesh.Faces[i], slotMap);
+            AddFace(geometry, mesh, mesh.Faces[i], i, slotMap);
         }
 
         return geometry;
@@ -45,12 +45,13 @@ public static class MeshGeometryBuilder
         }
 
         var geometry = new MeshGeometry3D();
-        var slotMap = new Dictionary<(int, int?), int>();
+        var slotMap = new Dictionary<(int, int?, int), int>();
         var face = mesh.Faces[faceIndex];
 
-        AppendVertexSlot(geometry, mesh, face.A.VertexIndex, face.A.NormalIndex, slotMap);
-        AppendVertexSlot(geometry, mesh, face.B.VertexIndex, face.B.NormalIndex, slotMap);
-        AppendVertexSlot(geometry, mesh, face.C.VertexIndex, face.C.NormalIndex, slotMap);
+        var fallbackNormal = CalculateFaceNormal(mesh, face);
+        AppendVertexSlot(geometry, mesh, face.A.VertexIndex, face.A.NormalIndex, faceIndex, fallbackNormal, slotMap);
+        AppendVertexSlot(geometry, mesh, face.B.VertexIndex, face.B.NormalIndex, faceIndex, fallbackNormal, slotMap);
+        AppendVertexSlot(geometry, mesh, face.C.VertexIndex, face.C.NormalIndex, faceIndex, fallbackNormal, slotMap);
         geometry.TriangleIndices.Add(0);
         geometry.TriangleIndices.Add(1);
         geometry.TriangleIndices.Add(2);
@@ -62,11 +63,13 @@ public static class MeshGeometryBuilder
         MeshGeometry3D geometry,
         Mesh mesh,
         Face face,
-        Dictionary<(int, int?), int> slotMap)
+        int faceIndex,
+        Dictionary<(int, int?, int), int> slotMap)
     {
-        var a = AppendVertexSlot(geometry, mesh, face.A.VertexIndex, face.A.NormalIndex, slotMap);
-        var b = AppendVertexSlot(geometry, mesh, face.B.VertexIndex, face.B.NormalIndex, slotMap);
-        var c = AppendVertexSlot(geometry, mesh, face.C.VertexIndex, face.C.NormalIndex, slotMap);
+        var fallbackNormal = CalculateFaceNormal(mesh, face);
+        var a = AppendVertexSlot(geometry, mesh, face.A.VertexIndex, face.A.NormalIndex, faceIndex, fallbackNormal, slotMap);
+        var b = AppendVertexSlot(geometry, mesh, face.B.VertexIndex, face.B.NormalIndex, faceIndex, fallbackNormal, slotMap);
+        var c = AppendVertexSlot(geometry, mesh, face.C.VertexIndex, face.C.NormalIndex, faceIndex, fallbackNormal, slotMap);
 
         geometry.TriangleIndices.Add(a);
         geometry.TriangleIndices.Add(b);
@@ -82,14 +85,16 @@ public static class MeshGeometryBuilder
         Mesh mesh,
         int vertexIndex,
         int? normalIndex,
-        Dictionary<(int, int?), int> slotMap)
+        int faceIndex,
+        Vector3D fallbackNormal,
+        Dictionary<(int, int?, int), int> slotMap)
     {
         if (vertexIndex < 0 || vertexIndex >= mesh.Vertices.Count)
         {
             throw new InvalidOperationException($"Face references missing vertex index {vertexIndex}.");
         }
 
-        var key = (vertexIndex, normalIndex);
+        var key = (vertexIndex, normalIndex, normalIndex is null ? faceIndex : -1);
         if (slotMap.TryGetValue(key, out var existing))
         {
             return existing;
@@ -102,7 +107,7 @@ public static class MeshGeometryBuilder
 
         if (normalIndex is null)
         {
-            geometry.Normals.Add(new Vector3D(0, 0, 1)); // default normal
+            geometry.Normals.Add(fallbackNormal);
         }
         else
         {
@@ -117,4 +122,21 @@ public static class MeshGeometryBuilder
         slotMap[key] = slot;
         return slot;
     }
+
+    private static Vector3D CalculateFaceNormal(Mesh mesh, Face face)
+    {
+        var a = ToPoint(mesh.Vertices[face.A.VertexIndex]);
+        var b = ToPoint(mesh.Vertices[face.B.VertexIndex]);
+        var c = ToPoint(mesh.Vertices[face.C.VertexIndex]);
+        var normal = Vector3D.CrossProduct(b - a, c - a);
+        if (normal.LengthSquared == 0)
+        {
+            return new Vector3D(0, 0, 1);
+        }
+
+        normal.Normalize();
+        return normal;
+    }
+
+    private static Point3D ToPoint(Vertex vertex) => new(vertex.X, vertex.Y, vertex.Z);
 }

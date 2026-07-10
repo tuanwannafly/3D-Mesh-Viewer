@@ -56,6 +56,31 @@ public sealed class MeshGeometryBuilderTests
         });
     }
 
+    [Fact]
+    public void Build_ComputesFaceNormals_WhenObjDoesNotProvideNormals()
+    {
+        var mesh = new Mesh();
+        mesh.AddVertex(new Vertex(0, 0, 0));
+        mesh.AddVertex(new Vertex(1, 0, 0));
+        mesh.AddVertex(new Vertex(0, 1, 0));
+        mesh.AddVertex(new Vertex(0, 0, 1));
+        mesh.Faces.Add(new Face(
+            new FaceVertex(0, null, null),
+            new FaceVertex(1, null, null),
+            new FaceVertex(2, null, null)));
+        mesh.Faces.Add(new Face(
+            new FaceVertex(0, null, null),
+            new FaceVertex(3, null, null),
+            new FaceVertex(1, null, null)));
+
+        var geometry = MeshGeometryBuilder.Build(mesh);
+
+        Assert.Equal(6, geometry.Positions.Count);
+        Assert.Equal(6, geometry.Normals.Count);
+        Assert.All(geometry.Normals.Take(3), normal => Assert.Equal(1, normal.Z, 3));
+        Assert.All(geometry.Normals.Skip(3), normal => Assert.Equal(1, normal.Y, 3));
+    }
+
     private static Mesh CreateCubeLikeMesh()
     {
         var mesh = new Mesh();

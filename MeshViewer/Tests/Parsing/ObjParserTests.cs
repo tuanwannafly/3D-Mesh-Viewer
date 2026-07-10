@@ -45,4 +45,49 @@ public sealed class ObjParserTests
         Assert.Equal(new FaceVertex(3, null, 0), mesh.Faces[2].B);
         Assert.Equal(new FaceVertex(1, null, 1), mesh.Faces[2].C);
     }
+
+    [Fact]
+    public void Parse_TriangulatesPolygonFaces()
+    {
+        const string obj = """
+            v 0 0 0
+            v 1 0 0
+            v 1 1 0
+            v 0.5 1.5 0
+            v 0 1 0
+            f 1 2 3 4 5
+            """;
+
+        var mesh = new ObjParser().Parse(obj);
+
+        Assert.Equal(3, mesh.Faces.Count);
+        Assert.Equal(new FaceVertex(0, null, null), mesh.Faces[0].A);
+        Assert.Equal(new FaceVertex(1, null, null), mesh.Faces[0].B);
+        Assert.Equal(new FaceVertex(2, null, null), mesh.Faces[0].C);
+        Assert.Equal(new FaceVertex(0, null, null), mesh.Faces[2].A);
+        Assert.Equal(new FaceVertex(3, null, null), mesh.Faces[2].B);
+        Assert.Equal(new FaceVertex(4, null, null), mesh.Faces[2].C);
+    }
+
+    [Fact]
+    public void Parse_ResolvesNegativeFaceIndicesRelativeToCurrentData()
+    {
+        const string obj = """
+            v 0 0 0
+            v 1 0 0
+            v 0 1 0
+            vt 0 0
+            vt 1 0
+            vt 0 1
+            vn 0 0 1
+            f -3/-3/-1 -2/-2/-1 -1/-1/-1
+            """;
+
+        var mesh = new ObjParser().Parse(obj);
+
+        Assert.Single(mesh.Faces);
+        Assert.Equal(new FaceVertex(0, 0, 0), mesh.Faces[0].A);
+        Assert.Equal(new FaceVertex(1, 1, 0), mesh.Faces[0].B);
+        Assert.Equal(new FaceVertex(2, 2, 0), mesh.Faces[0].C);
+    }
 }
