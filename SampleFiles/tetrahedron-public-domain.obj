@@ -1,0 +1,17 @@
+# Sample: Tetrahedron
+# Source: Public-domain Platonic solid definition from Paul Bourke, "Platonic Solids".
+# Source URL: https://paulbourke.net/geometry/platonic/
+# License: Public Domain source data; OBJ representation hand-authored for this project.
+o Tetrahedron
+v 1 1 1
+v -1 -1 1
+v -1 1 -1
+v 1 -1 -1
+vn 0.577350 0.577350 0.577350
+vn -0.577350 -0.577350 0.577350
+vn -0.577350 0.577350 -0.577350
+vn 0.577350 -0.577350 -0.577350
+f 1//1 2//2 3//3
+f 1//1 4//4 2//2
+f 1//1 3//3 4//4
+f 2//2 4//4 3//3
