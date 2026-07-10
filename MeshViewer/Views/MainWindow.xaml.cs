@@ -1,10 +1,13 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
+using Microsoft.Win32;
 using MeshViewer.Camera;
 using MeshViewer.Geometry3D;
 using MeshViewer.Models;
+using MeshViewer.Parsing;
 
 namespace MeshViewer.Views;
 
@@ -15,6 +18,7 @@ public partial class MainWindow : Window
     private Model3DGroup? sceneLights;
     private ModelVisual3D? meshVisual;
     private ModelVisual3D? selectedFaceVisual;
+    private int? selectedFaceIndex;
     private Point lastMousePosition;
     private bool isOrbiting;
     private bool isPanning;
@@ -30,6 +34,7 @@ public partial class MainWindow : Window
     private void RenderMesh(Mesh mesh)
     {
         currentMesh = mesh;
+        selectedFaceIndex = null;
         sceneLights = new Model3DGroup();
         sceneLights.Children.Add(new AmbientLight(Color.FromRgb(70, 70, 70)));
         sceneLights.Children.Add(new DirectionalLight(Colors.White, new Vector3D(-1, -2, -3)));
@@ -39,6 +44,7 @@ public partial class MainWindow : Window
         MainViewport.Children.Clear();
         MainViewport.Children.Add(new ModelVisual3D { Content = sceneLights });
         AddMeshVisualsToViewport();
+        UpdateMeshStats();
         ResetView();
     }
 
@@ -49,8 +55,12 @@ public partial class MainWindow : Window
             return;
         }
 
-        var meshMaterial = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(86, 156, 214)));
-        var meshModel = new GeometryModel3D(MeshGeometryBuilder.Build(currentMesh, selectedFaceIndex), meshMaterial)
+        var isWireframe = WireframeToggle.IsChecked == true;
+        var meshMaterial = new DiffuseMaterial(new SolidColorBrush(isWireframe ? Colors.Black : Color.FromRgb(86, 156, 214)));
+        var geometry = isWireframe
+            ? WireframeGeometryBuilder.Build(currentMesh, Math.Max(currentMesh.BoundingBox?.MaxDimension ?? 1, 1) * 0.003)
+            : MeshGeometryBuilder.Build(currentMesh, selectedFaceIndex);
+        var meshModel = new GeometryModel3D(geometry, meshMaterial)
         {
             BackMaterial = meshMaterial
         };
@@ -87,6 +97,33 @@ public partial class MainWindow : Window
     }
 
     private void TransformSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => ApplyMeshTransform();
+
+    private void LoadObjButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "OBJ files (*.obj)|*.obj|All files (*.*)|*.*",
+            Title = "Load OBJ"
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        var mesh = new ObjParser().Parse(File.ReadAllText(dialog.FileName));
+        RenderMesh(mesh);
+    }
+
+    private void RenderModeToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        if (currentMesh is null)
+        {
+            return;
+        }
+
+        RebuildScene();
+    }
 
     private void ApplyMeshTransform()
     {
@@ -212,14 +249,26 @@ public partial class MainWindow : Window
 
         var ray = ScreenRayCaster.CreateRay(position, SceneCamera, MainViewport.ActualWidth, MainViewport.ActualHeight);
         var result = MeshRayPicker.Pick(currentMesh, ray, meshVisual.Transform.Value);
-        RenderMeshVisual(result?.FaceIndex);
+        selectedFaceIndex = result?.FaceIndex;
+        RebuildScene();
+    }
 
+    private void RebuildScene()
+    {
+        RenderMeshVisual(selectedFaceIndex);
         if (sceneLights is not null)
         {
             MainViewport.Children.Clear();
             MainViewport.Children.Add(new ModelVisual3D { Content = sceneLights });
             AddMeshVisualsToViewport();
         }
+    }
+
+    private void UpdateMeshStats()
+    {
+        MeshStatsText.Text = currentMesh is null
+            ? "No mesh loaded"
+            : $"Vertices: {currentMesh.Vertices.Count} | Faces: {currentMesh.Faces.Count}";
     }
 
     private void StopMouseDrag()
