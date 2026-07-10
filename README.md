@@ -16,9 +16,7 @@
 
 ![3D Mesh Viewer demo](assets/demo.gif)
 
-or
 
-https://github.com/user-attachments/assets/your-demo-video-id
 
 -->
 
