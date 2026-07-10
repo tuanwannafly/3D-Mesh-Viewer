@@ -5,7 +5,7 @@ namespace MeshViewer.Geometry3D;
 
 public static class MeshGeometryBuilder
 {
-    public static MeshGeometry3D Build(Mesh mesh)
+    public static MeshGeometry3D Build(Mesh mesh, int? excludedFaceIndex = null)
     {
         ArgumentNullException.ThrowIfNull(mesh);
 
@@ -16,12 +16,49 @@ public static class MeshGeometryBuilder
             geometry.Positions.Add(new Point3D(vertex.X, vertex.Y, vertex.Z));
         }
 
-        foreach (var face in mesh.Faces)
+        for (var i = 0; i < mesh.Faces.Count; i++)
         {
-            AddFace(geometry, mesh, face);
+            if (i == excludedFaceIndex)
+            {
+                continue;
+            }
+
+            AddFace(geometry, mesh, mesh.Faces[i]);
         }
 
         return geometry;
+    }
+
+    public static MeshGeometry3D BuildFace(Mesh mesh, int faceIndex)
+    {
+        ArgumentNullException.ThrowIfNull(mesh);
+
+        if (faceIndex < 0 || faceIndex >= mesh.Faces.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(faceIndex));
+        }
+
+        var geometry = new MeshGeometry3D();
+        AddFaceVertex(geometry, mesh, mesh.Faces[faceIndex].A);
+        AddFaceVertex(geometry, mesh, mesh.Faces[faceIndex].B);
+        AddFaceVertex(geometry, mesh, mesh.Faces[faceIndex].C);
+        geometry.TriangleIndices.Add(0);
+        geometry.TriangleIndices.Add(1);
+        geometry.TriangleIndices.Add(2);
+
+        return geometry;
+    }
+
+    private static void AddFaceVertex(MeshGeometry3D geometry, Mesh mesh, FaceVertex faceVertex)
+    {
+        if (faceVertex.VertexIndex < 0 || faceVertex.VertexIndex >= mesh.Vertices.Count)
+        {
+            throw new InvalidOperationException($"Face references missing vertex index {faceVertex.VertexIndex}.");
+        }
+
+        var vertex = mesh.Vertices[faceVertex.VertexIndex];
+        geometry.Positions.Add(new Point3D(vertex.X, vertex.Y, vertex.Z));
+        AddNormalIfPresent(geometry, mesh, faceVertex.NormalIndex);
     }
 
     private static void AddFace(MeshGeometry3D geometry, Mesh mesh, Face face)
