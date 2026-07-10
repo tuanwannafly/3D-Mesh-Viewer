@@ -12,6 +12,7 @@ public partial class MainWindow : Window
 {
     private readonly OrbitCameraController cameraController;
     private Mesh? currentMesh;
+    private ModelVisual3D? meshVisual;
     private Point lastMousePosition;
     private bool isOrbiting;
     private bool isPanning;
@@ -31,14 +32,39 @@ public partial class MainWindow : Window
         modelGroup.Children.Add(new DirectionalLight(Colors.White, new Vector3D(-1, -2, -3)));
 
         var material = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(86, 156, 214)));
-        modelGroup.Children.Add(new GeometryModel3D(MeshGeometryBuilder.Build(mesh), material)
+        var meshModel = new GeometryModel3D(MeshGeometryBuilder.Build(mesh), material)
         {
             BackMaterial = material
-        });
+        };
+
+        meshVisual = new ModelVisual3D { Content = meshModel };
+        ApplyMeshTransform();
 
         MainViewport.Children.Clear();
         MainViewport.Children.Add(new ModelVisual3D { Content = modelGroup });
+        MainViewport.Children.Add(meshVisual);
         ResetView();
+    }
+
+    private void TransformSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => ApplyMeshTransform();
+
+    private void ApplyMeshTransform()
+    {
+        if (meshVisual is null)
+        {
+            return;
+        }
+
+        meshVisual.Transform = ObjectTransformBuilder.Build(new ObjectTransform(
+            RotateXSlider.Value,
+            RotateYSlider.Value,
+            RotateZSlider.Value,
+            TranslateXSlider.Value,
+            TranslateYSlider.Value,
+            TranslateZSlider.Value,
+            ScaleXSlider.Value,
+            ScaleYSlider.Value,
+            ScaleZSlider.Value));
     }
 
     private void ResetView()
