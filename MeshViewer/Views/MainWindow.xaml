@@ -18,23 +18,59 @@
             </ToolBar>
         </ToolBarTray>
 
-        <Viewport3D x:Name="MainViewport"
-                    Grid.Row="1"
-                    ClipToBounds="True"
-                    Focusable="True"
-                    MouseLeftButtonDown="MainViewport_MouseLeftButtonDown"
-                    MouseLeftButtonUp="MainViewport_MouseLeftButtonUp"
-                    MouseMove="MainViewport_MouseMove"
-                    MouseWheel="MainViewport_MouseWheel"
-                    MouseDown="MainViewport_MouseDown"
-                    MouseUp="MainViewport_MouseUp">
-            <Viewport3D.Camera>
-                <PerspectiveCamera x:Name="SceneCamera"
-                                   Position="0,0,5"
-                                   LookDirection="0,0,-1"
-                                   UpDirection="0,1,0"
-                                   FieldOfView="45" />
-            </Viewport3D.Camera>
-        </Viewport3D>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="280" />
+            </Grid.ColumnDefinitions>
+
+            <Viewport3D x:Name="MainViewport"
+                        Grid.Column="0"
+                        ClipToBounds="True"
+                        Focusable="True"
+                        MouseLeftButtonDown="MainViewport_MouseLeftButtonDown"
+                        MouseLeftButtonUp="MainViewport_MouseLeftButtonUp"
+                        MouseMove="MainViewport_MouseMove"
+                        MouseWheel="MainViewport_MouseWheel"
+                        MouseDown="MainViewport_MouseDown"
+                        MouseUp="MainViewport_MouseUp">
+                <Viewport3D.Camera>
+                    <PerspectiveCamera x:Name="SceneCamera"
+                                       Position="0,0,5"
+                                       LookDirection="0,0,-1"
+                                       UpDirection="0,1,0"
+                                       FieldOfView="45" />
+                </Viewport3D.Camera>
+            </Viewport3D>
+
+            <ScrollViewer Grid.Column="1" Padding="12" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock FontSize="16" FontWeight="SemiBold" Text="Transform" />
+                    <TextBlock Margin="0,12,0,4" FontWeight="SemiBold" Text="Rotate" />
+                    <TextBlock Text="X" />
+                    <Slider x:Name="RotateXSlider" Minimum="-180" Maximum="180" TickFrequency="15" ValueChanged="TransformSlider_ValueChanged" />
+                    <TextBlock Text="Y" />
+                    <Slider x:Name="RotateYSlider" Minimum="-180" Maximum="180" TickFrequency="15" ValueChanged="TransformSlider_ValueChanged" />
+                    <TextBlock Text="Z" />
+                    <Slider x:Name="RotateZSlider" Minimum="-180" Maximum="180" TickFrequency="15" ValueChanged="TransformSlider_ValueChanged" />
+
+                    <TextBlock Margin="0,12,0,4" FontWeight="SemiBold" Text="Translate" />
+                    <TextBlock Text="X" />
+                    <Slider x:Name="TranslateXSlider" Minimum="-3" Maximum="3" TickFrequency="0.25" ValueChanged="TransformSlider_ValueChanged" />
+                    <TextBlock Text="Y" />
+                    <Slider x:Name="TranslateYSlider" Minimum="-3" Maximum="3" TickFrequency="0.25" ValueChanged="TransformSlider_ValueChanged" />
+                    <TextBlock Text="Z" />
+                    <Slider x:Name="TranslateZSlider" Minimum="-3" Maximum="3" TickFrequency="0.25" ValueChanged="TransformSlider_ValueChanged" />
+
+                    <TextBlock Margin="0,12,0,4" FontWeight="SemiBold" Text="Scale" />
+                    <TextBlock Text="X" />
+                    <Slider x:Name="ScaleXSlider" Minimum="0.1" Maximum="3" TickFrequency="0.1" Value="1" ValueChanged="TransformSlider_ValueChanged" />
+                    <TextBlock Text="Y" />
+                    <Slider x:Name="ScaleYSlider" Minimum="0.1" Maximum="3" TickFrequency="0.1" Value="1" ValueChanged="TransformSlider_ValueChanged" />
+                    <TextBlock Text="Z" />
+                    <Slider x:Name="ScaleZSlider" Minimum="0.1" Maximum="3" TickFrequency="0.1" Value="1" ValueChanged="TransformSlider_ValueChanged" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Window>
