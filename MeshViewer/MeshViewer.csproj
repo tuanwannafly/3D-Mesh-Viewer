@@ -15,4 +15,8 @@
     <Page Remove="Tests\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\SampleFiles\**\*.obj" Link="SampleFiles\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
