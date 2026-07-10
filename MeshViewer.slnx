@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/MeshViewer/" />
+  <Folder Name="/MeshViewer/Tests/">
+    <Project Path="MeshViewer/Tests/MeshViewer.Tests.csproj" />
+  </Folder>
+  <Project Path="MeshViewer/MeshViewer.csproj" />
+</Solution>
