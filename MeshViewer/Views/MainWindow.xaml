@@ -14,17 +14,28 @@
 
         <ToolBarTray Grid.Row="0">
             <ToolBar>
+                <Button Click="LoadObjButton_Click" Content="Load OBJ" />
                 <Button Click="ResetViewButton_Click" Content="Reset View" />
+                <Separator />
+                <ToggleButton x:Name="WireframeToggle"
+                              Checked="RenderModeToggle_Changed"
+                              Content="Wireframe"
+                              Unchecked="RenderModeToggle_Changed" />
             </ToolBar>
         </ToolBarTray>
 
         <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="280" />
             </Grid.ColumnDefinitions>
 
             <Viewport3D x:Name="MainViewport"
+                        Grid.Row="0"
                         Grid.Column="0"
                         ClipToBounds="True"
                         Focusable="True"
@@ -71,6 +82,12 @@
                     <Slider x:Name="ScaleZSlider" Minimum="0.1" Maximum="3" TickFrequency="0.1" Value="1" ValueChanged="TransformSlider_ValueChanged" />
                 </StackPanel>
             </ScrollViewer>
+
+            <StatusBar Grid.Row="1" Grid.ColumnSpan="2">
+                <StatusBarItem>
+                    <TextBlock x:Name="MeshStatsText" Text="No mesh loaded" />
+                </StatusBarItem>
+            </StatusBar>
         </Grid>
     </Grid>
 </Window>
