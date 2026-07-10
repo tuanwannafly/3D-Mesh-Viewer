@@ -7,6 +7,13 @@
         Title="3D Mesh Viewer" Height="720" Width="1080"
         MinHeight="480" MinWidth="720">
     <Grid>
-        <Viewport3D x:Name="MainViewport" />
+        <Viewport3D x:Name="MainViewport">
+            <Viewport3D.Camera>
+                <PerspectiveCamera Position="0,0,5"
+                                   LookDirection="0,0,-1"
+                                   UpDirection="0,1,0"
+                                   FieldOfView="45" />
+            </Viewport3D.Camera>
+        </Viewport3D>
     </Grid>
 </Window>
