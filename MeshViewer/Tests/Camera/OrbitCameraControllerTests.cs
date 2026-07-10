@@ -50,4 +50,36 @@ public sealed class OrbitCameraControllerTests
 
         Assert.Equal(controller.MaxDistance, controller.Distance);
     }
+
+    [Fact]
+    public void FitToView_ResetsOrbitAnglesToZero()
+    {
+        var controller = new OrbitCameraController(new PerspectiveCamera { FieldOfView = 45 });
+        var bounds = new BoundingBox(new Vertex(-1, -1, -1), new Vertex(1, 1, 1));
+
+        controller.Rotate(500, 500);
+        Assert.NotEqual(0, controller.YawDegrees);
+        Assert.NotEqual(0, controller.PitchDegrees);
+
+        controller.FitToView(bounds, 1);
+
+        Assert.Equal(0, controller.YawDegrees);
+        Assert.Equal(0, controller.PitchDegrees);
+    }
+
+    [Fact]
+    public void FitToViewPreservingOrientation_KeepsOrbitAngles()
+    {
+        var controller = new OrbitCameraController(new PerspectiveCamera { FieldOfView = 45 });
+        var bounds = new BoundingBox(new Vertex(-1, -1, -1), new Vertex(1, 1, 1));
+
+        controller.Rotate(40, 20);
+        var yawBefore = controller.YawDegrees;
+        var pitchBefore = controller.PitchDegrees;
+
+        controller.FitToViewPreservingOrientation(bounds, 1);
+
+        Assert.Equal(yawBefore, controller.YawDegrees);
+        Assert.Equal(pitchBefore, controller.PitchDegrees);
+    }
 }

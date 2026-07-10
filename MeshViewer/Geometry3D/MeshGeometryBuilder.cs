@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Windows.Media.Media3D;
 using MeshViewer.Models;
 
@@ -5,16 +6,21 @@ namespace MeshViewer.Geometry3D;
 
 public static class MeshGeometryBuilder
 {
+    /// <summary>
+    /// Builds a WPF <see cref="MeshGeometry3D"/> from a <see cref="Mesh"/>.
+    ///
+    /// WPF requires <see cref="MeshGeometry3D.Positions"/>, <see cref="MeshGeometry3D.Normals"/>,
+    /// and <see cref="MeshGeometry3D.TextureCoordinates"/> to share indices — they all
+    /// describe the same vertex slots. Plain shared-vertex meshes (one vertex used by many
+    /// triangles with different normals) cannot be expressed as-is, so we deduplicate
+    /// by <c>(vertex index, normal index)</c> and re-emit a unique slot for each combination.
+    /// </summary>
     public static MeshGeometry3D Build(Mesh mesh, int? excludedFaceIndex = null)
     {
         ArgumentNullException.ThrowIfNull(mesh);
 
         var geometry = new MeshGeometry3D();
-
-        foreach (var vertex in mesh.Vertices)
-        {
-            geometry.Positions.Add(new Point3D(vertex.X, vertex.Y, vertex.Z));
-        }
+        var slotMap = new Dictionary<(int vertexIndex, int? normalIndex), int>();
 
         for (var i = 0; i < mesh.Faces.Count; i++)
         {
@@ -23,7 +29,7 @@ public static class MeshGeometryBuilder
                 continue;
             }
 
-            AddFace(geometry, mesh, mesh.Faces[i]);
+            AddFace(geometry, mesh, mesh.Faces[i], slotMap);
         }
 
         return geometry;
@@ -39,9 +45,12 @@ public static class MeshGeometryBuilder
         }
 
         var geometry = new MeshGeometry3D();
-        AddFaceVertex(geometry, mesh, mesh.Faces[faceIndex].A);
-        AddFaceVertex(geometry, mesh, mesh.Faces[faceIndex].B);
-        AddFaceVertex(geometry, mesh, mesh.Faces[faceIndex].C);
+        var slotMap = new Dictionary<(int, int?), int>();
+        var face = mesh.Faces[faceIndex];
+
+        AppendVertexSlot(geometry, mesh, face.A.VertexIndex, face.A.NormalIndex, slotMap);
+        AppendVertexSlot(geometry, mesh, face.B.VertexIndex, face.B.NormalIndex, slotMap);
+        AppendVertexSlot(geometry, mesh, face.C.VertexIndex, face.C.NormalIndex, slotMap);
         geometry.TriangleIndices.Add(0);
         geometry.TriangleIndices.Add(1);
         geometry.TriangleIndices.Add(2);
@@ -49,52 +58,63 @@ public static class MeshGeometryBuilder
         return geometry;
     }
 
-    private static void AddFaceVertex(MeshGeometry3D geometry, Mesh mesh, FaceVertex faceVertex)
+    private static void AddFace(
+        MeshGeometry3D geometry,
+        Mesh mesh,
+        Face face,
+        Dictionary<(int, int?), int> slotMap)
     {
-        if (faceVertex.VertexIndex < 0 || faceVertex.VertexIndex >= mesh.Vertices.Count)
+        var a = AppendVertexSlot(geometry, mesh, face.A.VertexIndex, face.A.NormalIndex, slotMap);
+        var b = AppendVertexSlot(geometry, mesh, face.B.VertexIndex, face.B.NormalIndex, slotMap);
+        var c = AppendVertexSlot(geometry, mesh, face.C.VertexIndex, face.C.NormalIndex, slotMap);
+
+        geometry.TriangleIndices.Add(a);
+        geometry.TriangleIndices.Add(b);
+        geometry.TriangleIndices.Add(c);
+    }
+
+    /// <summary>
+    /// Appends a new (Position, Normal) slot for the requested vertex+normal pair, or returns
+    /// the index of an existing matching slot. Guarantees <c>Positions.Count == Normals.Count</c>.
+    /// </summary>
+    private static int AppendVertexSlot(
+        MeshGeometry3D geometry,
+        Mesh mesh,
+        int vertexIndex,
+        int? normalIndex,
+        Dictionary<(int, int?), int> slotMap)
+    {
+        if (vertexIndex < 0 || vertexIndex >= mesh.Vertices.Count)
         {
-            throw new InvalidOperationException($"Face references missing vertex index {faceVertex.VertexIndex}.");
+            throw new InvalidOperationException($"Face references missing vertex index {vertexIndex}.");
         }
 
-        var vertex = mesh.Vertices[faceVertex.VertexIndex];
+        var key = (vertexIndex, normalIndex);
+        if (slotMap.TryGetValue(key, out var existing))
+        {
+            return existing;
+        }
+
+        var vertex = mesh.Vertices[vertexIndex];
+        var slot = geometry.Positions.Count;
+
         geometry.Positions.Add(new Point3D(vertex.X, vertex.Y, vertex.Z));
-        AddNormalIfPresent(geometry, mesh, faceVertex.NormalIndex);
-    }
 
-    private static void AddFace(MeshGeometry3D geometry, Mesh mesh, Face face)
-    {
-        AddTriangleIndex(geometry, face.A.VertexIndex);
-        AddTriangleIndex(geometry, face.B.VertexIndex);
-        AddTriangleIndex(geometry, face.C.VertexIndex);
-
-        AddNormalIfPresent(geometry, mesh, face.A.NormalIndex);
-        AddNormalIfPresent(geometry, mesh, face.B.NormalIndex);
-        AddNormalIfPresent(geometry, mesh, face.C.NormalIndex);
-    }
-
-    private static void AddTriangleIndex(MeshGeometry3D geometry, int index)
-    {
-        if (index < 0 || index >= geometry.Positions.Count)
-        {
-            throw new InvalidOperationException($"Face references missing vertex index {index}.");
-        }
-
-        geometry.TriangleIndices.Add(index);
-    }
-
-    private static void AddNormalIfPresent(MeshGeometry3D geometry, Mesh mesh, int? normalIndex)
-    {
         if (normalIndex is null)
         {
-            return;
+            geometry.Normals.Add(new Vector3D(0, 0, 1)); // default normal
         }
-
-        if (normalIndex < 0 || normalIndex >= mesh.Normals.Count)
+        else
         {
-            throw new InvalidOperationException($"Face references missing normal index {normalIndex}.");
+            if (normalIndex < 0 || normalIndex >= mesh.Normals.Count)
+            {
+                throw new InvalidOperationException($"Face references missing normal index {normalIndex}.");
+            }
+            var normal = mesh.Normals[normalIndex.Value];
+            geometry.Normals.Add(new Vector3D(normal.X, normal.Y, normal.Z));
         }
 
-        var normal = mesh.Normals[normalIndex.Value];
-        geometry.Normals.Add(new Vector3D(normal.X, normal.Y, normal.Z));
+        slotMap[key] = slot;
+        return slot;
     }
 }

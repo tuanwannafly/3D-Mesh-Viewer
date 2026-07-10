@@ -1,0 +1,43 @@
+<UserControl x:Class="MeshViewer.Views.AxisRowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Name="Root">
+    <Grid Margin="0,4,0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="16" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="72" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0"
+                   Text="{Binding Axis, ElementName=Root}"
+                   Style="{StaticResource TextLabel}"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   Margin="0,0,8,0" />
+
+        <Slider x:Name="ValueSlider"
+                Grid.Column="1"
+                Style="{StaticResource ModernSlider}"
+                Minimum="{Binding Minimum, ElementName=Root}"
+                Maximum="{Binding Maximum, ElementName=Root}"
+                TickFrequency="{Binding Tick, ElementName=Root}"
+                Value="{Binding Value, ElementName=Root, Mode=TwoWay}"
+                IsMoveToPointEnabled="True"
+                VerticalAlignment="Center"
+                Margin="0,0,12,0"
+                Thumb.DragCompleted="ValueSlider_DragCompleted"
+                PreviewMouseLeftButtonUp="ValueSlider_PreviewMouseLeftButtonUp" />
+
+        <TextBox x:Name="ValueBox"
+                 Grid.Column="2"
+                 Style="{StaticResource NumericBox}"
+                 Text="{Binding Value, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=LostFocus, StringFormat={}{0:0.##}}"
+                 VerticalAlignment="Center"
+                 LostFocus="ValueBox_LostFocus"
+                 KeyDown="ValueBox_KeyDown" />
+    </Grid>
+</UserControl>

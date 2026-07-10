@@ -1,0 +1,124 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- ================================================================== -->
+    <!--   Design tokens — modern, calm, technical aesthetic                -->
+    <!--   Dark surface stack + vibrant cyan/violet accents                 -->
+    <!-- ================================================================== -->
+
+    <!-- Surface stack: deeper at the back, lighter toward the user -->
+    <Color x:Key="Surface0Color">#0B0F17</Color>   <!-- window backdrop -->
+    <Color x:Key="Surface1Color">#111725</Color>   <!-- panels -->
+    <Color x:Key="Surface2Color">#182033</Color>   <!-- nested panels -->
+    <Color x:Key="Surface3Color">#1F2940</Color>   <!-- controls -->
+    <Color x:Key="Surface4Color">#2A3654</Color>   <!-- hovered controls -->
+    <Color x:Key="Surface5Color">#3A4A6E</Color>   <!-- pressed / border accents -->
+
+    <!-- Borders / dividers -->
+    <Color x:Key="BorderColor">#23314E</Color>
+    <Color x:Key="BorderSubtleColor">#1A2236</Color>
+    <Color x:Key="DividerColor">#1E2840</Color>
+
+    <!-- Text -->
+    <Color x:Key="TextPrimaryColor">#E6ECF7</Color>
+    <Color x:Key="TextSecondaryColor">#A6B2CC</Color>
+    <Color x:Key="TextMutedColor">#6E7B96</Color>
+    <Color x:Key="TextInverseColor">#0B0F17</Color>
+
+    <!-- Accent: a calm cyan used for primary actions -->
+    <Color x:Key="AccentColor">#5EC8E0</Color>
+    <Color x:Key="AccentHoverColor">#7DD6EA</Color>
+    <Color x:Key="AccentPressedColor">#3FB4CE</Color>
+    <Color x:Key="AccentMutedColor">#1F3D49</Color>
+
+    <!-- Secondary accent: violet, used for the "selected face" highlight swatch etc -->
+    <Color x:Key="AccentVioletColor">#B388FF</Color>
+    <Color x:Key="AccentVioletMutedColor">#3A2B5C</Color>
+
+    <!-- Status / feedback -->
+    <Color x:Key="SuccessColor">#5BD49A</Color>
+    <Color x:Key="WarnColor">#E8B465</Color>
+    <Color x:Key="DangerColor">#E57373</Color>
+
+    <!-- Brush shortcuts -->
+    <SolidColorBrush x:Key="Surface0Brush" Color="{StaticResource Surface0Color}" />
+    <SolidColorBrush x:Key="Surface1Brush" Color="{StaticResource Surface1Color}" />
+    <SolidColorBrush x:Key="Surface2Brush" Color="{StaticResource Surface2Color}" />
+    <SolidColorBrush x:Key="Surface3Brush" Color="{StaticResource Surface3Color}" />
+    <SolidColorBrush x:Key="Surface4Brush" Color="{StaticResource Surface4Color}" />
+    <SolidColorBrush x:Key="Surface5Brush" Color="{StaticResource Surface5Color}" />
+
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource BorderSubtleColor}" />
+    <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}" />
+
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
+    <SolidColorBrush x:Key="TextInverseBrush" Color="{StaticResource TextInverseColor}" />
+
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource AccentPressedColor}" />
+    <SolidColorBrush x:Key="AccentMutedBrush" Color="{StaticResource AccentMutedColor}" />
+
+    <SolidColorBrush x:Key="AccentVioletBrush" Color="{StaticResource AccentVioletColor}" />
+    <SolidColorBrush x:Key="AccentVioletMutedBrush" Color="{StaticResource AccentVioletMutedColor}" />
+
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
+    <SolidColorBrush x:Key="WarnBrush" Color="{StaticResource WarnColor}" />
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
+
+    <!-- Subtle vertical gradient for the title bar -->
+    <LinearGradientBrush x:Key="TitleBarGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#162038" Offset="0" />
+        <GradientStop Color="#101828" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Background grid for the 3D viewport -->
+    <DrawingBrush x:Key="ViewportBackdropBrush"
+                  TileMode="Tile"
+                  Viewport="0,0,48,48"
+                  ViewportUnits="Absolute">
+        <DrawingBrush.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="{StaticResource Surface0Brush}">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,48,48" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#131A2C">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,1,48" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#131A2C">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,48,1" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+
+    <!-- Typography sizes -->
+    <sys:Double x:Key="FontSizeMicro">10.5</sys:Double>
+    <sys:Double x:Key="FontSizeSmall">12</sys:Double>
+    <sys:Double x:Key="FontSizeBody">13</sys:Double>
+    <sys:Double x:Key="FontSizeLabel">14</sys:Double>
+    <sys:Double x:Key="FontSizeHeading">16</sys:Double>
+    <sys:Double x:Key="FontSizeTitle">20</sys:Double>
+
+    <!-- Spacing -->
+    <Thickness x:Key="SpacingXS">4</Thickness>
+    <Thickness x:Key="SpacingS">8</Thickness>
+    <Thickness x:Key="SpacingM">12</Thickness>
+    <Thickness x:Key="SpacingL">16</Thickness>
+    <Thickness x:Key="SpacingXL">24</Thickness>
+
+    <!-- Standard corner radius for cards / panels -->
+    <CornerRadius x:Key="RadiusS">4</CornerRadius>
+    <CornerRadius x:Key="RadiusM">6</CornerRadius>
+    <CornerRadius x:Key="RadiusL">10</CornerRadius>
+</ResourceDictionary>

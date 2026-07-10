@@ -70,7 +70,22 @@ public sealed class OrbitCameraController
         UpdateCamera();
     }
 
+    /// <summary>
+    /// Fits the camera to the bounds AND resets orbit angles, so the mesh is
+    /// always presented front-facing when called (e.g. after loading a new mesh).
+    /// </summary>
     public void FitToView(BoundingBox bounds, double aspectRatio)
+    {
+        YawDegrees = 0;
+        PitchDegrees = 0;
+        FitToViewPreservingOrientation(bounds, aspectRatio);
+    }
+
+    /// <summary>
+    /// Fits the camera to the bounds while keeping the user's current orbit angles.
+    /// Useful when the user wants to re-frame without losing their viewpoint.
+    /// </summary>
+    public void FitToViewPreservingOrientation(BoundingBox bounds, double aspectRatio)
     {
         Target = ToPoint(bounds.Center);
 
@@ -80,8 +95,11 @@ public sealed class OrbitCameraController
         var fitVertical = maxDimension / (2 * Math.Tan(verticalFovRadians / 2));
         var fitHorizontal = maxDimension / (2 * Math.Tan(horizontalFovRadians / 2));
 
-        Distance = Math.Max(fitVertical, fitHorizontal) * 1.8;
-        MinDistance = Math.Max(maxDimension * 0.05, 0.1);
+        // 2.4x margin guarantees the mesh is comfortably inside the frustum even
+        // when the initial fit happens before layout has given the viewport a
+        // real size (which can otherwise leave the camera too close).
+        Distance = Math.Max(fitVertical, fitHorizontal) * 2.4;
+        MinDistance = Math.Max(maxDimension * 0.1, 0.1);
         MaxDistance = Math.Max(maxDimension * 20, MinDistance * 2);
         Distance = Math.Clamp(Distance, MinDistance, MaxDistance);
         UpdateCamera();

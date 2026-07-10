@@ -3,91 +3,369 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MeshViewer.Views"
         mc:Ignorable="d"
-        Title="3D Mesh Viewer" Height="720" Width="1080"
-        MinHeight="480" MinWidth="720">
+        Title="3D Mesh Viewer"
+        Height="760" Width="1180"
+        MinHeight="540" MinWidth="860"
+        Background="{StaticResource Surface0Brush}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ToolBarTray Grid.Row="0">
-            <ToolBar>
-                <Button Click="LoadObjButton_Click" Content="Load OBJ" />
-                <Button Click="ResetViewButton_Click" Content="Reset View" />
-                <Separator />
-                <ToggleButton x:Name="WireframeToggle"
-                              Checked="RenderModeToggle_Changed"
-                              Content="Wireframe"
-                              Unchecked="RenderModeToggle_Changed" />
-            </ToolBar>
-        </ToolBarTray>
+        <!-- ============================ TITLE BAR ============================ -->
+        <Border Grid.Row="0"
+                Background="{StaticResource TitleBarGradient}"
+                BorderBrush="{StaticResource BorderSubtleBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="20,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
+                <!-- Brand mark: a colored bar + wordmark (no icons) -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="4" Height="22"
+                            Background="{StaticResource AccentBrush}"
+                            CornerRadius="2"
+                            VerticalAlignment="Center"
+                            Margin="0,0,12,0" />
+                    <StackPanel>
+                        <TextBlock Text="MESHVIEWER"
+                                   Style="{StaticResource TextTitle}"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Wavefront .OBJ · Ray-picking · Custom 3D pipeline"
+                                   Style="{StaticResource TextMicro}"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Header actions -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="LoadObjButton"
+                            Click="LoadObjButton_Click"
+                            Content="Load OBJ"
+                            Style="{StaticResource PrimaryButton}"
+                            Margin="0,0,8,0" />
+                    <Button x:Name="ResetViewButton"
+                            Click="ResetViewButton_Click"
+                            Content="Reset View"
+                            Style="{StaticResource ButtonBase}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============================ MAIN AREA ============================ -->
         <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="280" />
+                <ColumnDefinition Width="*" MinWidth="320" />
+                <ColumnDefinition Width="1" />
+                <ColumnDefinition Width="340" MinWidth="280" />
             </Grid.ColumnDefinitions>
 
-            <Viewport3D x:Name="MainViewport"
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        ClipToBounds="True"
-                        Focusable="True"
-                        MouseLeftButtonDown="MainViewport_MouseLeftButtonDown"
-                        MouseLeftButtonUp="MainViewport_MouseLeftButtonUp"
-                        MouseMove="MainViewport_MouseMove"
-                        MouseWheel="MainViewport_MouseWheel"
-                        MouseDown="MainViewport_MouseDown"
-                        MouseUp="MainViewport_MouseUp">
-                <Viewport3D.Camera>
-                    <PerspectiveCamera x:Name="SceneCamera"
-                                       Position="0,0,5"
-                                       LookDirection="0,0,-1"
-                                       UpDirection="0,1,0"
-                                       FieldOfView="45" />
-                </Viewport3D.Camera>
-            </Viewport3D>
+            <!-- ============== Viewport region with overlay toolbar ============== -->
+            <Grid Grid.Column="0">
+                <Border Background="{StaticResource ViewportBackdropBrush}"
+                        SnapsToDevicePixels="True">
+                    <Viewport3D x:Name="MainViewport"
+                                ClipToBounds="True"
+                                Focusable="True"
+                                SizeChanged="Viewport_SizeChanged"
+                                MouseLeftButtonDown="MainViewport_MouseLeftButtonDown"
+                                MouseLeftButtonUp="MainViewport_MouseLeftButtonUp"
+                                MouseMove="MainViewport_MouseMove"
+                                MouseWheel="MainViewport_MouseWheel"
+                                MouseDown="MainViewport_MouseDown"
+                                MouseUp="MainViewport_MouseUp">
+                                <Viewport3D.Camera>
+                                    <PerspectiveCamera x:Name="SceneCamera"
+                                                       Position="0,0,5"
+                                                       LookDirection="0,0,-1"
+                                                       UpDirection="0,1,0"
+                                                       NearPlaneDistance="0.01"
+                                                       FarPlaneDistance="10000"
+                                                       FieldOfView="60" />
+                                </Viewport3D.Camera>
+                    </Viewport3D>
+                </Border>
 
-            <ScrollViewer Grid.Column="1" Padding="12" VerticalScrollBarVisibility="Auto">
+                <!-- Floating viewport toolbar (top-left) -->
+                <Border HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Margin="16"
+                        Background="{StaticResource Surface2Brush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusM}"
+                        Padding="8">
+                    <StackPanel Orientation="Horizontal">
+                        <ToggleButton x:Name="WireframeToggle"
+                                      Checked="RenderModeToggle_Changed"
+                                      Unchecked="RenderModeToggle_Changed"
+                                      Style="{StaticResource SwitchToggle}"
+                                      Content="Wireframe" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Floating selection info (top-right) -->
+                <Border HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="16"
+                        Background="{StaticResource Surface2Brush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusM}"
+                        Padding="12,8">
+                    <StackPanel>
+                        <TextBlock Text="SELECTION" Style="{StaticResource TextMicro}" />
+                        <TextBlock x:Name="SelectionInfoText"
+                                   Text="None"
+                                   Margin="0,4,0,0"
+                                   Style="{StaticResource TextBody}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Hint footer inside viewport -->
+                <Border HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom"
+                        Margin="16"
+                        Background="{StaticResource Surface2Brush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusM}"
+                        Padding="12,7"
+                        Opacity="0.92">
+                    <TextBlock x:Name="HintText"
+                               Text="Drag = orbit · Shift+drag = pan · Wheel = zoom · Click = pick face"
+                               Style="{StaticResource TextMuted}"
+                               FontSize="{StaticResource FontSizeSmall}" />
+                </Border>
+
+                <!-- Diagnostic HUD: shows camera state inside the viewport so we can
+                     verify the camera is positioned correctly even when the 3D mesh
+                     itself fails to render (HiDPI / driver edge cases). -->
+                <Border HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Margin="16,80,16,16"
+                        Background="#CC000000"
+                        BorderBrush="{StaticResource AccentBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusM}"
+                        Padding="10,6">
+                    <StackPanel>
+                        <TextBlock Text="CAMERA"
+                                   FontSize="10"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   FontWeight="SemiBold" />
+                        <TextBlock x:Name="ViewportHudText"
+                                   Text="—"
+                                   FontSize="11"
+                                   Foreground="White"
+                                   FontFamily="Consolas" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Vertical divider -->
+            <Rectangle Grid.Column="1"
+                       Width="1"
+                       Fill="{StaticResource DividerBrush}"
+                       HorizontalAlignment="Stretch" />
+
+            <!-- ============== Inspector panel ============== -->
+            <ScrollViewer Grid.Column="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Background="{StaticResource Surface0Brush}"
+                          Padding="16">
                 <StackPanel>
-                    <TextBlock FontSize="16" FontWeight="SemiBold" Text="Transform" />
-                    <TextBlock Margin="0,12,0,4" FontWeight="SemiBold" Text="Rotate" />
-                    <TextBlock Text="X" />
-                    <Slider x:Name="RotateXSlider" Minimum="-180" Maximum="180" TickFrequency="15" ValueChanged="TransformSlider_ValueChanged" />
-                    <TextBlock Text="Y" />
-                    <Slider x:Name="RotateYSlider" Minimum="-180" Maximum="180" TickFrequency="15" ValueChanged="TransformSlider_ValueChanged" />
-                    <TextBlock Text="Z" />
-                    <Slider x:Name="RotateZSlider" Minimum="-180" Maximum="180" TickFrequency="15" ValueChanged="TransformSlider_ValueChanged" />
+                    <!-- Scene summary card -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="SCENE" Style="{StaticResource TextMicro}" />
+                            <TextBlock x:Name="MeshNameText"
+                                       Text="Preview mesh"
+                                       Style="{StaticResource TextLabel}"
+                                       Margin="0,6,0,0" />
+                            <Rectangle Style="{StaticResource ThinDivider}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="Vertices" Style="{StaticResource TextMicro}" />
+                                    <TextBlock x:Name="VertexCountText"
+                                               Text="—"
+                                               Style="{StaticResource TextHeading}"
+                                               Margin="0,2,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Row="0" Grid.Column="1">
+                                    <TextBlock Text="Faces" Style="{StaticResource TextMicro}" />
+                                    <TextBlock x:Name="FaceCountText"
+                                               Text="—"
+                                               Style="{StaticResource TextHeading}"
+                                               Margin="0,2,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,10,0,0">
+                                    <TextBlock Text="Width" Style="{StaticResource TextMicro}" />
+                                    <TextBlock x:Name="WidthText" Text="—"
+                                               Style="{StaticResource TextBody}" />
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+                                    <TextBlock Text="Height" Style="{StaticResource TextMicro}" />
+                                    <TextBlock x:Name="HeightText" Text="—"
+                                               Style="{StaticResource TextBody}" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
 
-                    <TextBlock Margin="0,12,0,4" FontWeight="SemiBold" Text="Translate" />
-                    <TextBlock Text="X" />
-                    <Slider x:Name="TranslateXSlider" Minimum="-3" Maximum="3" TickFrequency="0.25" ValueChanged="TransformSlider_ValueChanged" />
-                    <TextBlock Text="Y" />
-                    <Slider x:Name="TranslateYSlider" Minimum="-3" Maximum="3" TickFrequency="0.25" ValueChanged="TransformSlider_ValueChanged" />
-                    <TextBlock Text="Z" />
-                    <Slider x:Name="TranslateZSlider" Minimum="-3" Maximum="3" TickFrequency="0.25" ValueChanged="TransformSlider_ValueChanged" />
+                    <TextBlock Text="ROTATE" Style="{StaticResource SectionHeader}" />
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <local:AxisRowControl Axis="X"
+                                                  SliderName="RotateXSlider"
+                                                  Minimum="-180" Maximum="180" Tick="15"
+                                                  Value="0" />
+                            <local:AxisRowControl Axis="Y"
+                                                  SliderName="RotateYSlider"
+                                                  Minimum="-180" Maximum="180" Tick="15"
+                                                  Value="0" />
+                            <local:AxisRowControl Axis="Z"
+                                                  SliderName="RotateZSlider"
+                                                  Minimum="-180" Maximum="180" Tick="15"
+                                                  Value="0" />
+                        </StackPanel>
+                    </Border>
 
-                    <TextBlock Margin="0,12,0,4" FontWeight="SemiBold" Text="Scale" />
-                    <TextBlock Text="X" />
-                    <Slider x:Name="ScaleXSlider" Minimum="0.1" Maximum="3" TickFrequency="0.1" Value="1" ValueChanged="TransformSlider_ValueChanged" />
-                    <TextBlock Text="Y" />
-                    <Slider x:Name="ScaleYSlider" Minimum="0.1" Maximum="3" TickFrequency="0.1" Value="1" ValueChanged="TransformSlider_ValueChanged" />
-                    <TextBlock Text="Z" />
-                    <Slider x:Name="ScaleZSlider" Minimum="0.1" Maximum="3" TickFrequency="0.1" Value="1" ValueChanged="TransformSlider_ValueChanged" />
+                    <TextBlock Text="TRANSLATE" Style="{StaticResource SectionHeader}" />
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <local:AxisRowControl Axis="X"
+                                                  SliderName="TranslateXSlider"
+                                                  Minimum="-3" Maximum="3" Tick="0.25"
+                                                  Value="0" />
+                            <local:AxisRowControl Axis="Y"
+                                                  SliderName="TranslateYSlider"
+                                                  Minimum="-3" Maximum="3" Tick="0.25"
+                                                  Value="0" />
+                            <local:AxisRowControl Axis="Z"
+                                                  SliderName="TranslateZSlider"
+                                                  Minimum="-3" Maximum="3" Tick="0.25"
+                                                  Value="0" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="SCALE" Style="{StaticResource SectionHeader}" />
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <local:AxisRowControl Axis="X"
+                                                  SliderName="ScaleXSlider"
+                                                  Minimum="0.1" Maximum="3" Tick="0.1"
+                                                  Value="1" />
+                            <local:AxisRowControl Axis="Y"
+                                                  SliderName="ScaleYSlider"
+                                                  Minimum="0.1" Maximum="3" Tick="0.1"
+                                                  Value="1" />
+                            <local:AxisRowControl Axis="Z"
+                                                  SliderName="ScaleZSlider"
+                                                  Minimum="0.1" Maximum="3" Tick="0.1"
+                                                  Value="1" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="CAMERA" Style="{StaticResource SectionHeader}" />
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Distance" Style="{StaticResource TextMicro}" />
+                                    <TextBlock x:Name="CameraDistanceText"
+                                               Text="5.00"
+                                               Style="{StaticResource TextHeading}"
+                                               Margin="0,2,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Target" Style="{StaticResource TextMicro}" HorizontalAlignment="Right" />
+                                    <TextBlock x:Name="CameraTargetText"
+                                               Text="0, 0, 0"
+                                               Style="{StaticResource TextBody}"
+                                               Margin="0,2,0,0"
+                                               HorizontalAlignment="Right" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="0,16,0,24" Padding="0">
+                        <StackPanel>
+                            <TextBlock Text="TIPS" Style="{StaticResource TextMicro}" />
+                            <TextBlock Style="{StaticResource TextSecondary}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0">
+                                <Run Text="•  Drag" />
+                                <Run Text="  " />
+                                <Run Text="with left mouse to orbit the camera." FontWeight="SemiBold" />
+                                <LineBreak />
+                                <Run Text="•  Hold" />
+                                <Run Text=" Shift " />
+                                <Run Text="while dragging to pan, or use middle mouse." FontWeight="SemiBold" />
+                                <LineBreak />
+                                <Run Text="•  Scroll" />
+                                <Run Text="  " />
+                                <Run Text="the wheel to zoom in and out." FontWeight="SemiBold" />
+                                <LineBreak />
+                                <Run Text="•  Click" />
+                                <Run Text="  " />
+                                <Run Text="a face to highlight it with ray-picking." FontWeight="SemiBold" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
-
-            <StatusBar Grid.Row="1" Grid.ColumnSpan="2">
-                <StatusBarItem>
-                    <TextBlock x:Name="MeshStatsText" Text="No mesh loaded" />
-                </StatusBarItem>
-            </StatusBar>
         </Grid>
+
+        <!-- ============================ STATUS BAR ============================ -->
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="8" Height="8"
+                             Fill="{StaticResource SuccessBrush}"
+                             VerticalAlignment="Center"
+                             Margin="0,0,8,0" />
+                    <TextBlock x:Name="MeshStatsText"
+                               Text="No mesh loaded"
+                               Style="{StaticResource TextSecondary}" />
+                </StackPanel>
+            </StatusBarItem>
+            <Separator Background="{StaticResource DividerBrush}" />
+            <StatusBarItem>
+                <TextBlock x:Name="CameraStatusText"
+                           Text="Camera · idle"
+                           Style="{StaticResource TextMuted}" />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock x:Name="FilePathText"
+                           Text=""
+                           Style="{StaticResource TextMuted}"
+                           TextTrimming="CharacterEllipsis"
+                           MaxWidth="500" />
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>
