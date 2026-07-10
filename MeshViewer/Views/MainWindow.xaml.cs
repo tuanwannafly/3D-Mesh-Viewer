@@ -207,11 +207,16 @@ public partial class MainWindow : Window
 
         try
         {
-            var content = File.ReadAllText(dialog.FileName);
-            var mesh = new ObjParser().Parse(content);
-            System.Diagnostics.Debug.WriteLine(
-                $"[MeshViewer] Loaded '{dialog.FileName}' → {mesh.Vertices.Count} vertices, {mesh.Faces.Count} faces");
-            RenderMesh(mesh, isPreview: false, filePath: dialog.FileName);
+                var content = File.ReadAllText(dialog.FileName);
+                var mesh = new ObjParser().Parse(content);
+                if (mesh.Faces.Count == 0)
+                {
+                    throw new InvalidOperationException("The OBJ file does not contain any supported renderable faces.");
+                }
+
+                System.Diagnostics.Debug.WriteLine(
+                    $"[MeshViewer] Loaded '{dialog.FileName}' → {mesh.Vertices.Count} vertices, {mesh.Faces.Count} faces");
+                RenderMesh(mesh, isPreview: false, filePath: dialog.FileName);
         }
         catch (Exception ex)
         {

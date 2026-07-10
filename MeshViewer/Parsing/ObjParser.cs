@@ -98,36 +98,38 @@ public sealed class ObjParser
             return;
         }
 
-        var vertices = parts.Skip(1).Select(ParseFaceVertex).ToArray();
-        if (vertices.Length is not (3 or 4))
+        var vertices = parts.Skip(1).Select(part => ParseFaceVertex(part, mesh)).ToArray();
+        if (vertices.Length < 3)
         {
             return;
         }
 
-        mesh.Faces.Add(new Face(vertices[0], vertices[1], vertices[2]));
-
-        if (vertices.Length == 4)
+        for (var i = 1; i < vertices.Length - 1; i++)
         {
-            mesh.Faces.Add(new Face(vertices[0], vertices[2], vertices[3]));
+            mesh.Faces.Add(new Face(vertices[0], vertices[i], vertices[i + 1]));
         }
     }
 
-    private static FaceVertex ParseFaceVertex(string value)
+    private static FaceVertex ParseFaceVertex(string value, Mesh mesh)
     {
         var parts = value.Split('/');
         return new FaceVertex(
-            ParseObjIndex(parts[0]),
-            parts.Length > 1 ? ParseOptionalObjIndex(parts[1]) : null,
-            parts.Length > 2 ? ParseOptionalObjIndex(parts[2]) : null);
+            ParseObjIndex(parts[0], mesh.Vertices.Count),
+            parts.Length > 1 ? ParseOptionalObjIndex(parts[1], mesh.TextureCoordinates.Count) : null,
+            parts.Length > 2 ? ParseOptionalObjIndex(parts[2], mesh.Normals.Count) : null);
     }
 
-    private static int ParseObjIndex(string value) => int.Parse(value, CultureInfo.InvariantCulture) - 1;
+    private static int ParseObjIndex(string value, int itemCount)
+    {
+        var index = int.Parse(value, CultureInfo.InvariantCulture);
+        return index < 0 ? itemCount + index : index - 1;
+    }
 
-    private static int? ParseOptionalObjIndex(string value)
+    private static int? ParseOptionalObjIndex(string value, int itemCount)
     {
         return string.IsNullOrWhiteSpace(value)
             ? null
-            : ParseObjIndex(value);
+            : ParseObjIndex(value, itemCount);
     }
 
     private static double ParseDouble(string value) => double.Parse(value, CultureInfo.InvariantCulture);
