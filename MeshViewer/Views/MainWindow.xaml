@@ -1,0 +1,12 @@
+﻿<Window x:Class="MeshViewer.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="3D Mesh Viewer" Height="720" Width="1080"
+        MinHeight="480" MinWidth="720">
+    <Grid>
+        <Viewport3D x:Name="MainViewport" />
+    </Grid>
+</Window>

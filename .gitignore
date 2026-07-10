@@ -1,0 +1,10 @@
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md
+
+# Build output
+bin/
+obj/
+**/bin/
+**/obj/
